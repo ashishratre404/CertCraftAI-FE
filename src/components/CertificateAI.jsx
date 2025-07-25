@@ -7,28 +7,48 @@ export default function CertificateAI() {
   const [name, setName] = useState("");
   const [course, setCourse] = useState("");
   const [htmlCode, setHtmlCode] = useState("");
-  const [previewHTML, setPreviewHTML] = useState("");
   const [aiInstruction, setAiInstruction] = useState("");
 
+  const handleValidateInputs = () => {
+    if (!backgroundImage) {
+      alert("Please upload a background image.");
+      return false;
+    }
+    if (!referenceImage) {
+      alert("Please upload a reference certificate image.");
+      return false;
+    }
+    if (!name.trim()) {
+      alert("Please enter a name.");
+      return false;
+    }
+    if (!course.trim()) {
+      alert("Please enter a course.");
+      return false;
+    }
+    return true;
+  };
+
   const handleGenerate = async () => {
+    if (!handleValidateInputs()) return;
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("course", course);
     formData.append("backgroundImage", backgroundImage);
     formData.append("referenceImage", referenceImage);
 
-    const response = await fetch("/api/generate-html", {
+    const response = await fetch("http://localhost:3001/api/generate", {
       method: "POST",
       body: formData,
     });
 
     const data = await response.json();
     setHtmlCode(data.html);
-    setPreviewHTML(data.html);
   };
 
   const handleModify = async () => {
-    const response = await fetch("/api/modify-html", {
+    const response = await fetch("http://localhost:3001/api/modify", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -37,7 +57,7 @@ export default function CertificateAI() {
     });
     const data = await response.json();
     setHtmlCode(data.html);
-    setPreviewHTML(data.html);
+    setAiInstruction("");
   };
 
   return (
@@ -89,22 +109,21 @@ export default function CertificateAI() {
         <Typography fontWeight="medium" gutterBottom>
           Generated HTML
         </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={10}
-          value={htmlCode}
-          onChange={(e) => setHtmlCode(e.target.value)}
-        />
-      </Box>
-
-      <Box mb={3}>
-        <Typography fontWeight="medium" gutterBottom>
-          Live Preview
-        </Typography>
-        <Paper variant="outlined" sx={{ p: 2, height: "400px" }}>
-          <div dangerouslySetInnerHTML={{ __html: previewHTML }} />
-        </Paper>
+        <Box
+          sx={{
+            backgroundColor: "#f5f5f5",
+            padding: 2,
+            borderRadius: 1,
+            overflow: "auto",
+            fontFamily: "monospace",
+            fontSize: "0.9rem",
+            whiteSpace: "pre-wrap",
+            border: "1px solid #ccc",
+          }}
+          component="pre"
+        >
+          <code>{htmlCode.replace(/```html|```/g, "").trim()}</code>
+        </Box>
       </Box>
 
       <Box>
