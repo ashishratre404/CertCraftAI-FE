@@ -60,6 +60,32 @@ export default function CertificateAI() {
     setAiInstruction("");
   };
 
+  const handleDownloadPDF = async () => {
+    const response = await fetch("http://localhost:3001/api/download-pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        html: htmlCode.replace(/```html|```/g, "").trim(),
+      }),
+    });
+
+    if (!response.ok) {
+      alert("Failed to download PDF.");
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "certificate.pdf";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
   return (
     <Box sx={{ p: 4, maxWidth: "900px", mx: "auto" }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -139,6 +165,17 @@ export default function CertificateAI() {
         />
         <Button variant="outlined" onClick={handleModify} sx={{ mt: 2 }}>
           Apply AI Modification
+        </Button>
+      </Box>
+      <Box>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleDownloadPDF}
+          sx={{ mt: 2, ml: 2 }}
+          // disabled={!htmlCode}
+        >
+          Download PDF
         </Button>
       </Box>
     </Box>
